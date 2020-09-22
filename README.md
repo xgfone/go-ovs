@@ -20,7 +20,7 @@ import (
 )
 
 func main() {
-	exec.SetDefaultCmdLogHook() // Log the every executed command.
+	exec.SetDefaultCmdLogHook() // Log every executed command.
 
 	initBridge("br-ovs")
 	initFlows("br-ovs")
