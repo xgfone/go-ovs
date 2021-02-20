@@ -48,15 +48,15 @@ func GetAllFlows(bridge string, isName, isStats bool) (flows []string, err error
 	var out string
 	if isName {
 		if isStats {
-			out, err = exec.Outputs("ovs-ofctl", "--names", "--stats", "dump-flows", bridge)
+			out, err = exec.Outputs(OfctlCmd, "--names", "--stats", "dump-flows", bridge)
 		} else {
-			out, err = exec.Outputs("ovs-ofctl", "--names", "--no-stats", "dump-flows", bridge)
+			out, err = exec.Outputs(OfctlCmd, "--names", "--no-stats", "dump-flows", bridge)
 		}
 	} else {
 		if isStats {
-			out, err = exec.Outputs("ovs-ofctl", "--no-names", "--stats", "dump-flows", bridge)
+			out, err = exec.Outputs(OfctlCmd, "--no-names", "--stats", "dump-flows", bridge)
 		} else {
-			out, err = exec.Outputs("ovs-ofctl", "--no-names", "--no-stats", "dump-flows", bridge)
+			out, err = exec.Outputs(OfctlCmd, "--no-names", "--no-stats", "dump-flows", bridge)
 		}
 	}
 
@@ -70,7 +70,7 @@ func GetAllFlows(bridge string, isName, isStats bool) (flows []string, err error
 // AddFlows adds the flows.
 func AddFlows(bridge string, flows ...string) (err error) {
 	for _, flow := range flows {
-		if err = exec.Executes("ovs-ofctl", "add-flow", bridge, flow); err != nil {
+		if err = exec.Executes(OfctlCmd, "add-flow", bridge, flow); err != nil {
 			return
 		}
 	}
@@ -80,7 +80,7 @@ func AddFlows(bridge string, flows ...string) (err error) {
 // DelFlows deletes the flows.
 func DelFlows(bridge string, matches ...string) (err error) {
 	for _, match := range matches {
-		if err = exec.Executes("ovs-ofctl", "del-flows", bridge, match); err != nil {
+		if err = exec.Executes(OfctlCmd, "del-flows", bridge, match); err != nil {
 			return
 		}
 	}
@@ -91,7 +91,7 @@ func DelFlows(bridge string, matches ...string) (err error) {
 func DelFlowsStrict(bridge string, priority int, matches ...string) (err error) {
 	for _, match := range matches {
 		match = fmt.Sprintf("priority=%d,%s", priority, match)
-		err = exec.Executes("ovs-ofctl", "--strict", "del-flows", bridge, match)
+		err = exec.Executes(OfctlCmd, "--strict", "del-flows", bridge, match)
 		if err != nil {
 			return
 		}
@@ -153,6 +153,6 @@ func SendARPRequest(bridge, output, inPort, srcMac, srcIP, dstIP string,
 	}
 
 	pkt := fmt.Sprintf(arpPacket, srcmac, vlan, srcmac, srcIP, dstIP)
-	exec.Execute("ovs-ofctl", "packet-out", bridge, inPort, output, pkt)
+	exec.Execute(OfctlCmd, "packet-out", bridge, inPort, output, pkt)
 	return
 }
