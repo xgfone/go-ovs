@@ -16,47 +16,48 @@
 package ovs
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
 
+	exec "github.com/xgfone/go-tools/v7/execution"
 	"github.com/xgfone/go-tools/v7/net2"
-	"github.com/xgfone/goapp/exec"
-	"github.com/xgfone/goapp/log"
+	log "github.com/xgfone/klog/v4"
 	"github.com/xgfone/netaddr"
 )
 
-// PortStringToInt parses the decimal or hexadecimal string integer,
-// which will panic if failing to parse the port as int.
-func PortStringToInt(port string) int {
-	v, err := strconv.ParseInt(port, 0, 64)
+// StringToInt parses the decimal or hexadecimal string  to the integer,
+// which will panic if failing.
+func StringToInt(s string) int {
+	v, err := strconv.ParseInt(strings.TrimSpace(s), 0, 64)
 	if err != nil {
 		panic(err)
 	}
 	return int(v)
 }
 
-// PortIntToString converts the port from integer to string as the decimal.
-func PortIntToString(port int) string { return fmt.Sprintf("%d", port) }
+// IntToString converts the integer to string as the decimal.
+func IntToString(i int) string { return fmt.Sprintf("%d", i) }
 
-// PortIntToHexString converts the port from integer to string as the hexdecimal
+// IntToHexString converts the integer to string as the hexdecimal
 // with the prefix "0x".
-func PortIntToHexString(port int) string { return fmt.Sprintf("0x%x", port) }
+func IntToHexString(i int) string { return fmt.Sprintf("0x%x", i) }
 
 // GetAllFlows returns the list of all the flows of the bridge.
 func GetAllFlows(bridge string, isName, isStats bool) (flows []string, err error) {
 	var out string
 	if isName {
 		if isStats {
-			out, err = exec.Outputs(OfctlCmd, "--names", "--stats", "dump-flows", bridge)
+			out, err = exec.Output(context.Background(), OfctlCmd, "--names", "--stats", "dump-flows", bridge)
 		} else {
-			out, err = exec.Outputs(OfctlCmd, "--names", "--no-stats", "dump-flows", bridge)
+			out, err = exec.Output(context.Background(), OfctlCmd, "--names", "--no-stats", "dump-flows", bridge)
 		}
 	} else {
 		if isStats {
-			out, err = exec.Outputs(OfctlCmd, "--no-names", "--stats", "dump-flows", bridge)
+			out, err = exec.Output(context.Background(), OfctlCmd, "--no-names", "--stats", "dump-flows", bridge)
 		} else {
-			out, err = exec.Outputs(OfctlCmd, "--no-names", "--no-stats", "dump-flows", bridge)
+			out, err = exec.Output(context.Background(), OfctlCmd, "--no-names", "--no-stats", "dump-flows", bridge)
 		}
 	}
 
@@ -70,7 +71,7 @@ func GetAllFlows(bridge string, isName, isStats bool) (flows []string, err error
 // AddFlows adds the flows.
 func AddFlows(bridge string, flows ...string) (err error) {
 	for _, flow := range flows {
-		if err = exec.Executes(OfctlCmd, "add-flow", bridge, flow); err != nil {
+		if err = exec.Execute(context.Background(), OfctlCmd, "add-flow", bridge, flow); err != nil {
 			return
 		}
 	}
@@ -80,7 +81,7 @@ func AddFlows(bridge string, flows ...string) (err error) {
 // DelFlows deletes the flows.
 func DelFlows(bridge string, matches ...string) (err error) {
 	for _, match := range matches {
-		if err = exec.Executes(OfctlCmd, "del-flows", bridge, match); err != nil {
+		if err = exec.Execute(context.Background(), OfctlCmd, "del-flows", bridge, match); err != nil {
 			return
 		}
 	}
@@ -91,7 +92,7 @@ func DelFlows(bridge string, matches ...string) (err error) {
 func DelFlowsStrict(bridge string, priority int, matches ...string) (err error) {
 	for _, match := range matches {
 		match = fmt.Sprintf("priority=%d,%s", priority, match)
-		err = exec.Executes(OfctlCmd, "--strict", "del-flows", bridge, match)
+		err = exec.Execute(context.Background(), OfctlCmd, "--strict", "del-flows", bridge, match)
 		if err != nil {
 			return
 		}
@@ -102,21 +103,24 @@ func DelFlowsStrict(bridge string, priority int, matches ...string) (err error) 
 // MustAddFlow is the same as AddFlows, but the program exits if there is an error.
 func MustAddFlow(bridge, flow string) {
 	if err := AddFlows(bridge, flow); err != nil {
-		log.Fatalf("fail to add flow: %s", err)
+		log.Fatal("failed to add flow", log.F("bridge", bridge),
+			log.F("flow", flow), log.E(err))
 	}
 }
 
 // MustDelFlow is the same as DelFlows, but the program exits if there is an error.
 func MustDelFlow(bridge, match string) {
 	if err := DelFlows(bridge, match); err != nil {
-		log.Fatalf("fail to delete flows: %s", err)
+		log.Fatal("failed to delete flows", log.F("bridge", bridge),
+			log.F("match", match), log.E(err))
 	}
 }
 
 // MustDelFlowStrict is the same as DelFlowsStrict, but the program exits if there is an error.
 func MustDelFlowStrict(bridge string, priority int, match string) {
 	if err := DelFlowsStrict(bridge, priority, match); err != nil {
-		log.Fatalf("fail to delete flows: %s", err)
+		log.Fatal("failed to delete flows", log.F("bridge", bridge),
+			log.F("priority", priority), log.F("flow", match), log.E(err))
 	}
 }
 
@@ -153,6 +157,6 @@ func SendARPRequest(bridge, output, inPort, srcMac, srcIP, dstIP string,
 	}
 
 	pkt := fmt.Sprintf(arpPacket, srcmac, vlan, srcmac, srcIP, dstIP)
-	exec.Execute(OfctlCmd, "packet-out", bridge, inPort, output, pkt)
+	exec.Execute(context.Background(), OfctlCmd, "packet-out", bridge, inPort, output, pkt)
 	return
 }
