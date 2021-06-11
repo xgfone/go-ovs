@@ -21,9 +21,8 @@ import (
 	"strconv"
 	"strings"
 
-	exec "github.com/xgfone/go-tools/v7/execution"
-	"github.com/xgfone/go-tools/v7/net2"
-	log "github.com/xgfone/klog/v4"
+	"github.com/xgfone/go-exec"
+	"github.com/xgfone/go-log"
 	"github.com/xgfone/netaddr"
 )
 
@@ -134,7 +133,7 @@ var arpPacket = "ffffffffffff%s%s08060001080006040001%s%sffffffffffff%s"
 func SendARPRequest(bridge, output, inPort, srcMac, srcIP, dstIP string,
 	vlanID ...uint16) (err error) {
 
-	srcmac := strings.Replace(net2.NormalizeMacFu(srcMac), ":", "", -1)
+	srcmac := strings.Replace(normalizeMac(srcMac), ":", "", -1)
 	if srcmac == "" {
 		return fmt.Errorf("invalid src mac '%s'", srcMac)
 	}
@@ -159,4 +158,21 @@ func SendARPRequest(bridge, output, inPort, srcMac, srcIP, dstIP string,
 	pkt := fmt.Sprintf(arpPacket, srcmac, vlan, srcmac, srcIP, dstIP)
 	exec.Execute(context.Background(), OfctlCmd, "packet-out", bridge, inPort, output, pkt)
 	return
+}
+
+func normalizeMac(mac string) string {
+	macs := strings.Split(mac, ":")
+	if len(macs) != 6 {
+		return ""
+	}
+
+	for i, m := range macs {
+		v, err := strconv.ParseUint(m, 16, 8)
+		if err != nil {
+			return ""
+		}
+		macs[i] = fmt.Sprintf("%02x", v)
+	}
+
+	return strings.Join(macs, ":")
 }

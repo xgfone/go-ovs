@@ -20,8 +20,8 @@ import (
 	"strconv"
 	"strings"
 
-	exec "github.com/xgfone/go-tools/v7/execution"
-	log "github.com/xgfone/klog/v4"
+	"github.com/xgfone/go-exec"
+	"github.com/xgfone/go-log"
 )
 
 // ListAllOFPorts returns all the port names with its number on the bridge.
