@@ -26,30 +26,34 @@ import (
 
 // ListAllOFPorts returns all the port names with its number on the bridge.
 func ListAllOFPorts(bridge string) (map[string]int, error) {
-	if out, err := exec.Output(context.Background(), OfctlCmd, "show", bridge); err != nil {
+	out, err := exec.Output(context.Background(), OfctlCmd, "show", bridge)
+	if err != nil {
 		return nil, err
-	} else if out != "" {
-		lines := strings.Split(out, "\n")
-		ports := make(map[string]int, len(lines))
-		for _, line := range lines {
-			if line = strings.TrimSpace(line); line == "" || !strings.Contains(line, " addr:") {
-				continue
-			} else if strings.HasPrefix(line, "LOCAL") {
-				continue
-			}
-
-			if items := strings.Split(strings.SplitN(line, "):", 2)[0], "("); len(items) == 2 {
-				v, err := strconv.ParseInt(items[0], 10, 64)
-				if err != nil {
-					return nil, err
-				}
-				ports[items[1]] = int(v)
-			}
-		}
-		return ports, nil
 	}
 
-	return map[string]int{}, nil
+	if out == "" {
+		return map[string]int{}, nil
+	}
+
+	lines := strings.Split(out, "\n")
+	ports := make(map[string]int, len(lines))
+	for _, line := range lines {
+		if line = strings.TrimSpace(line); line == "" || !strings.Contains(line, " addr:") {
+			continue
+		} else if strings.HasPrefix(line, "LOCAL") {
+			continue
+		}
+
+		if items := strings.Split(strings.SplitN(line, "):", 2)[0], "("); len(items) == 2 {
+			v, err := strconv.ParseInt(items[0], 10, 64)
+			if err != nil {
+				return nil, err
+			}
+			ports[items[1]] = int(v)
+		}
+	}
+
+	return ports, nil
 }
 
 // SetInterfaceUp sets up the interface.
@@ -135,54 +139,56 @@ func AddVxLANPort(bridge, port, localIP, remoteIP string, ofport int) (err error
 // MustSetInterfaceUp is the same as SetInterfaceUp, but exit the program if failing.
 func MustSetInterfaceUp(iface string) {
 	if err := SetInterfaceUp(iface); err != nil {
-		log.Fatal("failed to set up the interface", log.F("interface", iface), log.E(err))
+		log.Fatal().Str("interface", iface).Err(err).
+			Printf("failed to set up the interface")
 	}
 }
 
 // MustCreateBridge is the same as CreateBridge, but exit the program if failing.
 func MustCreateBridge(name string, secureFailMode ...bool) {
 	if err := CreateBridge(name, secureFailMode...); err != nil {
-		log.Fatal("failed to create bridge", log.F("bridge", name), log.E(err))
+		log.Fatal().Str("bridge", name).Err(err).Printf("failed to create bridge")
 	}
 }
 
 // MustDeleteBridge is the same as DeleteBridge, but exit the program if failing.
 func MustDeleteBridge(name string) {
 	if err := DeleteBridge(name); err != nil {
-		log.Fatal("failed to delete bridge", log.F("bridge", name), log.E(err))
+		log.Fatal().Str("bridge", name).Err(err).Printf("failed to delete bridge")
 	}
 }
 
 // MustAddPort is the same as AddPort, but exit the program if failing.
 func MustAddPort(bridge, iface string, ofport int) {
 	if err := AddPort(bridge, iface, ofport); err != nil {
-		log.Fatal("failed to add the port to the bridge", log.F("bridge", bridge),
-			log.F("interface", iface), log.F("ofport", ofport), log.E(err))
+		log.Fatal().Str("bridge", bridge).Str("interface", iface).Int("ofport", ofport).
+			Err(err).Printf("failed to add the port to the bridge")
 	}
 }
 
 // MustDelPort is the same as DelPort, but exit the program if failing.
 func MustDelPort(bridge, iface string) {
 	if err := DelPort(bridge, iface); err != nil {
-		log.Fatal("failed to delete the port from the bridge",
-			log.F("bridge", bridge), log.F("interface", iface), log.E(err))
+		log.Fatal().Str("bridge", bridge).Str("interface", iface).Err(err).
+			Printf("failed to delete the port from the bridge")
 	}
 }
 
 // MustAddPatchPort is the same as AddPatchPort, but exit the program if failing.
 func MustAddPatchPort(bridge, patch, peerPatch string, ofport int) {
 	if err := AddPatchPort(bridge, patch, peerPatch, ofport); err != nil {
-		log.Fatal("failed to add the patch port to the bridge", log.F("bridge", bridge),
-			log.F("patch", patch), log.F("peer", peerPatch), log.F("ofport", ofport), log.E(err))
+		log.Fatal().Str("bridge", bridge).Str("patch", patch).
+			Str("peer", peerPatch).Int("ofport", ofport).Err(err).
+			Printf("failed to add the patch port to the bridge")
 	}
 }
 
 // MustAddVxLANPort is the same as AddVxLANPort, but exit the program if failing.
 func MustAddVxLANPort(bridge, port, localIP, remoteIP string, ofport int) {
 	if err := AddVxLANPort(bridge, port, localIP, remoteIP, ofport); err != nil {
-		log.Fatal("failed to add the vxlan port to the bridge",
-			log.F("bridge", bridge), log.F("port", port),
-			log.F("localip", localIP), log.F("remoteip", remoteIP),
-			log.F("ofport", ofport), log.E(err))
+		log.Fatal().Str("bridge", bridge).Str("port", port).
+			Str("localip", localIP).Str("remoteip", remoteIP).
+			Int("ofport", ofport).Err(err).
+			Printf("failed to add the vxlan port to the bridge")
 	}
 }

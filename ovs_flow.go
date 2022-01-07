@@ -70,7 +70,8 @@ func GetAllFlows(bridge string, isName, isStats bool) (flows []string, err error
 // AddFlows adds the flows.
 func AddFlows(bridge string, flows ...string) (err error) {
 	for _, flow := range flows {
-		if err = exec.Execute(context.Background(), OfctlCmd, "add-flow", bridge, flow); err != nil {
+		err = exec.Execute(context.Background(), OfctlCmd, "add-flow", bridge, flow)
+		if err != nil {
 			return
 		}
 	}
@@ -80,7 +81,8 @@ func AddFlows(bridge string, flows ...string) (err error) {
 // DelFlows deletes the flows.
 func DelFlows(bridge string, matches ...string) (err error) {
 	for _, match := range matches {
-		if err = exec.Execute(context.Background(), OfctlCmd, "del-flows", bridge, match); err != nil {
+		err = exec.Execute(context.Background(), OfctlCmd, "del-flows", bridge, match)
+		if err != nil {
 			return
 		}
 	}
@@ -102,24 +104,24 @@ func DelFlowsStrict(bridge string, priority int, matches ...string) (err error) 
 // MustAddFlow is the same as AddFlows, but the program exits if there is an error.
 func MustAddFlow(bridge, flow string) {
 	if err := AddFlows(bridge, flow); err != nil {
-		log.Fatal("failed to add flow", log.F("bridge", bridge),
-			log.F("flow", flow), log.E(err))
+		log.Fatal().Str("bridge", bridge).Str("flow", flow).
+			Err(err).Printf("failed to add flow")
 	}
 }
 
 // MustDelFlow is the same as DelFlows, but the program exits if there is an error.
 func MustDelFlow(bridge, match string) {
 	if err := DelFlows(bridge, match); err != nil {
-		log.Fatal("failed to delete flows", log.F("bridge", bridge),
-			log.F("match", match), log.E(err))
+		log.Fatal().Str("bridge", bridge).Str("match", match).
+			Err(err).Printf("failed to delete flows")
 	}
 }
 
 // MustDelFlowStrict is the same as DelFlowsStrict, but the program exits if there is an error.
 func MustDelFlowStrict(bridge string, priority int, match string) {
 	if err := DelFlowsStrict(bridge, priority, match); err != nil {
-		log.Fatal("failed to delete flows", log.F("bridge", bridge),
-			log.F("priority", priority), log.F("flow", match), log.E(err))
+		log.Fatal().Str("bridge", bridge).Int("priority", priority).
+			Str("match", match).Err(err).Printf("failed to delete flows")
 	}
 }
 
