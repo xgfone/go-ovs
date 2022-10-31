@@ -1,8 +1,6 @@
-github.com/xgfone/go-atexit v0.2.0 h1:pyoryNn60srlyHTJdEdDeR5ASJ/ebgEAxjoOG2mhHNQ=
-github.com/xgfone/go-atexit v0.2.0/go.mod h1:yN4Hf2wE06X4kJLL2qxBNKuJHTRdDRoifivfFoKdC8o=
-github.com/xgfone/go-exec v0.2.0 h1:Y5OxgcpXrSUvXjBcmNSVZ1Pfg0Z6AdG4aScdH+ls0Gc=
-github.com/xgfone/go-exec v0.2.0/go.mod h1:uyASdRqXjtI9NvhLeSXZcKSEL6uJw4SaBxGjh0me0kw=
-github.com/xgfone/go-log v0.11.0 h1:QTYRkmcgR0gi03iPDGZ2BwHj2WvYRnJMS17IOVHTgWw=
-github.com/xgfone/go-log v0.11.0/go.mod h1:dyeWNviR9IK0bxSsw78JmsKr4tHs45e27dvilhiPSQ0=
+github.com/xgfone/go-exec v0.4.0 h1:FsRyWZktnbmaBhy7QGop7GIEfQlaIo/YCpdaY/uLYkc=
+github.com/xgfone/go-exec v0.4.0/go.mod h1:uyASdRqXjtI9NvhLeSXZcKSEL6uJw4SaBxGjh0me0kw=
+github.com/xgfone/go-log v0.19.0 h1:yNZq3fFSnW+qEiAhQxSFbGBCeZfWuFRsxZunx+L/fSk=
+github.com/xgfone/go-log v0.19.0/go.mod h1:x7iLqeLG8McOIRT0CWMdsQ0Vb9FeZDRWFrqgSDUA7VM=
 github.com/xgfone/netaddr v0.5.1 h1:87DhCyyR6XUr0p63JHTDT5juGDhH49Ak2ePZNBmSL5I=
 github.com/xgfone/netaddr v0.5.1/go.mod h1:QDEYI/4nQfAtNj7TB4RhYQY1B4U31Edj+SOoDEuIfsQ=
