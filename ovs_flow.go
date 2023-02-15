@@ -18,11 +18,12 @@ package ovs
 import (
 	"context"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
+	"github.com/xgfone/go-atexit"
 	"github.com/xgfone/go-exec"
-	"github.com/xgfone/go-log"
 	"github.com/xgfone/netaddr"
 )
 
@@ -104,24 +105,24 @@ func DelFlowsStrict(bridge string, priority int, matches ...string) (err error) 
 // MustAddFlow is the same as AddFlows, but the program exits if there is an error.
 func MustAddFlow(bridge, flow string) {
 	if err := AddFlows(bridge, flow); err != nil {
-		log.Fatal().Str("bridge", bridge).Str("flow", flow).
-			Err(err).Printf("failed to add flow")
+		log.Printf("fail to add flow: bridge=%s, flow=%s, err=%v", bridge, flow, err)
+		atexit.Exit(1)
 	}
 }
 
 // MustDelFlow is the same as DelFlows, but the program exits if there is an error.
 func MustDelFlow(bridge, match string) {
 	if err := DelFlows(bridge, match); err != nil {
-		log.Fatal().Str("bridge", bridge).Str("match", match).
-			Err(err).Printf("failed to delete flows")
+		log.Printf("fail to delete flows: bridge=%s, match=%s, err=%v", bridge, match, err)
+		atexit.Exit(1)
 	}
 }
 
 // MustDelFlowStrict is the same as DelFlowsStrict, but the program exits if there is an error.
 func MustDelFlowStrict(bridge string, priority int, match string) {
 	if err := DelFlowsStrict(bridge, priority, match); err != nil {
-		log.Fatal().Str("bridge", bridge).Int("priority", priority).
-			Str("match", match).Err(err).Printf("failed to delete flows")
+		log.Printf("fail to delete flows: bridge=%s, priority=%d, match=%s, err=%v", bridge, priority, match, err)
+		atexit.Exit(1)
 	}
 }
 
