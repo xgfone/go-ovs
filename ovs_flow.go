@@ -19,12 +19,12 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/netip"
 	"strconv"
 	"strings"
 
 	"github.com/xgfone/go-atexit"
 	"github.com/xgfone/go-exec"
-	"github.com/xgfone/netaddr"
 )
 
 // StringToInt parses the decimal or hexadecimal string  to the integer,
@@ -141,17 +141,17 @@ func SendARPRequest(bridge, output, inPort, srcMac, srcIP, dstIP string,
 		return fmt.Errorf("invalid src mac '%s'", srcMac)
 	}
 
-	srcip, err := netaddr.NewIPAddress(srcIP)
+	srcip, err := netip.ParseAddr(srcIP)
 	if err != nil {
 		return
 	}
-	srcIP = srcip.Hex()
+	srcIP = fmt.Sprintf("%0x", srcip.As4())
 
-	dstip, err := netaddr.NewIPAddress(dstIP)
+	dstip, err := netip.ParseAddr(dstIP)
 	if err != nil {
 		return
 	}
-	dstIP = dstip.Hex()
+	dstIP = fmt.Sprintf("%0x", dstip.As4())
 
 	var vlan string
 	if len(vlanID) != 0 && vlanID[0] != 0 {
@@ -159,8 +159,7 @@ func SendARPRequest(bridge, output, inPort, srcMac, srcIP, dstIP string,
 	}
 
 	pkt := fmt.Sprintf(arpPacket, srcmac, vlan, srcmac, srcIP, dstIP)
-	exec.Execute(context.Background(), OfctlCmd, "packet-out", bridge, inPort, output, pkt)
-	return
+	return exec.Execute(context.Background(), OfctlCmd, "packet-out", bridge, inPort, output, pkt)
 }
 
 func normalizeMac(mac string) string {
